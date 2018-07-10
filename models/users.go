@@ -57,8 +57,8 @@ func (us *UserService) Create(user *User) error {
 }
 
 // Close closes the UserService database connection.
-func (us *UserService) Close() {
-	us.db.Close()
+func (us *UserService) Close() error {
+	return us.db.Close()
 }
 
 // DestructiveReset drops the user table and rebuilds it.
