@@ -6,15 +6,35 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/jackytck/lenslocked/controllers"
+	"github.com/jackytck/lenslocked/models"
+)
+
+const (
+	host     = "localhost"
+	port     = 5432
+	user     = "jacky"
+	password = "natnat"
+	dbname   = "lenslocked_dev"
 )
 
 func main() {
-	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers()
+	// db
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	us, err := models.NewUserService(psqlInfo)
+	defer us.Close()
+	if err != nil {
+		panic(err)
+	}
 
+	// controllers
+	staticC := controllers.NewStatic()
+	usersC := controllers.NewUsers(us)
+
+	// router
 	r := mux.NewRouter()
 	r.NotFoundHandler = http.HandlerFunc(notFound)
 
+	// routes
 	r.Handle("/", staticC.Home).Methods("GET")
 	r.Handle("/contact", staticC.Contact).Methods("GET")
 	r.HandleFunc("/signup", usersC.New).Methods("GET")

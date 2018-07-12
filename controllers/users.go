@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/jackytck/lenslocked/models"
 	"github.com/jackytck/lenslocked/views"
 )
 
@@ -11,15 +11,17 @@ import (
 // This function will panic if the templates are not
 // parsed correctly, and should only be used during
 // initial setup.
-func NewUsers() *Users {
+func NewUsers(us *models.UserService) *Users {
 	return &Users{
 		NewView: views.NewView("bootstrap", "users/new"),
+		us:      us,
 	}
 }
 
 // Users represent a set of users.
 type Users struct {
 	NewView *views.View
+	us      *models.UserService
 }
 
 // New renders the form where a user can create a new user account.
@@ -45,5 +47,11 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(r, &form); err != nil {
 		panic(err)
 	}
-	fmt.Fprintln(w, form)
+	user := models.User{
+		Name:  "",
+		Email: form.Email,
+	}
+	if err := u.us.Create(&user); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
