@@ -25,6 +25,8 @@ type UserService struct {
 	db *gorm.DB
 }
 
+const userPwPepper = "P4P]tV6$LZc;,bu5"
+
 // NewUserService helps create a UserService with db info.
 func NewUserService(connectionInfo string) (*UserService, error) {
 	db, err := gorm.Open("postgres", connectionInfo)
@@ -74,7 +76,8 @@ func first(db *gorm.DB, dst interface{}) error {
 // Create creates the provided user and backfill data
 // like the ID, CreatedAt, and UpdatedAt fields.
 func (us *UserService) Create(user *User) error {
-	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	pwBytpes := []byte(user.Password + userPwPepper)
+	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytpes, bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
