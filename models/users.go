@@ -26,18 +26,26 @@ var (
 	ErrInvalidPassword = errors.New("models: incorrect password provided")
 )
 
-// UserService provides services for interacting with user model.
-type UserService struct {
+// UserService is a set of methods used to manipulate and
+// work with the user model.
+type UserService interface {
+	// Authenticate verifies the provided email address and
+	// password are correct. If they are correct, the user
+	// corresponding to that email will be returned. Otherwise
+	// you will receive either:
+	// ErrNotFound, ErrInvalidPassword, or another error if
+	// something goes wrong.
+	Authenticate(email, password string) (*User, error)
 	UserDB
 }
 
 // NewUserService helps create a UserService with db info.
-func NewUserService(connectionInfo string) (*UserService, error) {
+func NewUserService(connectionInfo string) (UserService, error) {
 	ug, err := newUserGorm(connectionInfo)
 	if err != nil {
 		return nil, err
 	}
-	return &UserService{
+	return &userService{
 		UserDB: &userValidator{
 			UserDB: ug,
 		},
@@ -138,6 +146,11 @@ func (ug *userGorm) ByRemember(token string) (*User, error) {
 	return &u, nil
 }
 
+// UserService provides services for interacting with user model.
+type userService struct {
+	UserDB
+}
+
 // Authenticate can be used to authenticate a user with the
 // provided email address and password.
 // If the email address provided is invalid, this will return
@@ -148,7 +161,7 @@ func (ug *userGorm) ByRemember(token string) (*User, error) {
 // 	user, nil
 // Otherwise if another error is encountered this will return
 // 	nil, error
-func (us *UserService) Authenticate(email, password string) (*User, error) {
+func (us *userService) Authenticate(email, password string) (*User, error) {
 	foundUser, err := us.ByEmail(email)
 	if err != nil {
 		return nil, err
@@ -215,7 +228,7 @@ func (ug *userGorm) Delete(id uint) error {
 	return ug.db.Delete(&u).Error
 }
 
-// Close closes the UserService database connection.
+// Close closes the userService database connection.
 func (ug *userGorm) Close() error {
 	return ug.db.Close()
 }
