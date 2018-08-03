@@ -136,6 +136,17 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	return foundUser, nil
 }
 
+type userValFunc func(*User) error
+
+func runUserValFuncs(user *User, fns ...userValFunc) error {
+	for _, fn := range fns {
+		if err := fn(user); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 var _ UserDB = &userValidator{}
 
 type userValidator struct {
@@ -152,13 +163,9 @@ func (uv *userValidator) ByRemember(token string) (*User, error) {
 
 // Create creates the provided user with hashed password and remember hash.
 func (uv *userValidator) Create(user *User) error {
-	pwBytpes := []byte(user.Password + userPwPepper)
-	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytpes, bcrypt.DefaultCost)
-	if err != nil {
+	if err := runUserValFuncs(user, uv.bcryptPassword); err != nil {
 		return err
 	}
-	user.PasswordHash = string(hashedBytes)
-	user.Password = ""
 
 	if user.Remember == "" {
 		token, err := rand.RememberToken()
@@ -173,6 +180,10 @@ func (uv *userValidator) Create(user *User) error {
 
 // Create hashes a remember token if it is provided.
 func (uv *userValidator) Update(user *User) error {
+	if err := runUserValFuncs(user, uv.bcryptPassword); err != nil {
+		return err
+	}
+
 	if user.Remember != "" {
 		user.RememberHash = uv.hmac.Hash(user.Remember)
 	}
@@ -185,6 +196,22 @@ func (uv *userValidator) Delete(id uint) error {
 		return ErrInvalidID
 	}
 	return uv.UserDB.Delete(id)
+}
+
+// bcryptPassword hashes user password with predefined pepper (userPwPepper)
+// and bcrypt if the Password field is not the empty string
+func (uv *userValidator) bcryptPassword(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+	pwBytpes := []byte(user.Password + userPwPepper)
+	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytpes, bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedBytes)
+	user.Password = ""
+	return nil
 }
 
 var _ UserDB = &userGorm{}
