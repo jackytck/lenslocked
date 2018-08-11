@@ -20,6 +20,16 @@ func Bytes(n int) ([]byte, error) {
 	return b, nil
 }
 
+// NBytes returns the number of bytes used in the base64
+// URL encoded string.
+func NBytes(base64String string) (int, error) {
+	b, err := base64.URLEncoding.DecodeString(base64String)
+	if err != nil {
+		return -1, err
+	}
+	return len(b), nil
+}
+
 // String helps generate a byte slice of size nBytes and then
 // return a string that is the base64 URL encoded version
 // of that byte slice.
@@ -28,7 +38,7 @@ func String(nBytes int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return base64.RawURLEncoding.EncodeToString(b), nil
+	return base64.URLEncoding.EncodeToString(b), nil
 }
 
 // RememberToken is a helper function designed to generate
