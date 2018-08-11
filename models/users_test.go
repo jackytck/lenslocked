@@ -32,8 +32,9 @@ func TestCreateUser(t *testing.T) {
 	}
 
 	u := User{
-		Name:  "Nat Nat",
-		Email: "nat@nat.com",
+		Name:     "Nat Nat",
+		Email:    "nat@nat.com",
+		Password: "passw@rd",
 	}
 	err = us.Create(&u)
 	if err != nil {
