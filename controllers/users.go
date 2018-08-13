@@ -35,6 +35,24 @@ type SignupForm struct {
 	Password string `schema:"password"`
 }
 
+// New is used to render the form where a user can
+// create a new user account.
+//
+// GET /signup
+func (u *Users) New(w http.ResponseWriter, r *http.Request) {
+	type Alert struct {
+		Level   string
+		Message string
+	}
+	a := Alert{
+		Level:   "warning",
+		Message: "successfully rendered a dynamic alert!",
+	}
+	if err := u.NewView.Render(w, a); err != nil {
+		panic(err)
+	}
+}
+
 // Create processes the signup form when a user tries to create a new user account.
 //
 // POST /signup
