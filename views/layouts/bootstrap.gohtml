@@ -10,10 +10,10 @@
     {{template "navbar"}}
 
     <div class="container-fluid">
-      {{template "alert" .}}
-
-      <!-- Our content will go here... -->
-      {{template "yield" .}}
+      {{if .Alert}}
+        {{template "alert" .Alert}}
+      {{end}}
+      {{template "yield" .Yield}}
 
       {{template "footer" }}
     </div>
