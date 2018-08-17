@@ -29,15 +29,17 @@ type Data struct {
 // SetAlert sets the alert from PublicError if possible.
 func (d *Data) SetAlert(err error) {
 	if pErr, ok := err.(PublicError); ok {
-		d.Alert = &Alert{
-			Level:   AlertLvlError,
-			Message: pErr.Public(),
-		}
+		d.AlertError(pErr.Public())
 	} else {
-		d.Alert = &Alert{
-			Level:   AlertLvlError,
-			Message: AlertMsgGeneric,
-		}
+		d.AlertError(AlertMsgGeneric)
+	}
+}
+
+// AlertError sets an alert level error.
+func (d *Data) AlertError(msg string) {
+	d.Alert = &Alert{
+		Level:   AlertLvlError,
+		Message: msg,
 	}
 }
 
