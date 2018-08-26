@@ -20,15 +20,16 @@ const (
 func main() {
 	// db
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-	us, err := models.NewUserService(psqlInfo)
+	services, err := models.NewServices(psqlInfo)
 	must(err)
-	defer us.Close()
-	us.AutoMigrate()
+	// todo
+	// defer us.Close()
+	// us.AutoMigrate()
 	// us.DestructiveReset()
 
 	// controllers
 	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers(us)
+	usersC := controllers.NewUsers(services.User)
 
 	// router
 	r := mux.NewRouter()

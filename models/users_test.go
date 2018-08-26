@@ -16,10 +16,11 @@ func testingUserService() (UserService, error) {
 	)
 
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-	us, err := NewUserService(psqlInfo)
+	s, err := NewServices(psqlInfo)
 	if err != nil {
 		return nil, err
 	}
+	us := s.User
 	// Clear the users table between tests
 	us.DestructiveReset()
 	return us, nil
