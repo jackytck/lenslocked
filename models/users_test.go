@@ -22,7 +22,7 @@ func testingUserService() (UserService, error) {
 	}
 	us := s.User
 	// Clear the users table between tests
-	us.DestructiveReset()
+	s.DestructiveReset()
 	return us, nil
 }
 
