@@ -7,10 +7,6 @@ const (
 	// in the database.
 	ErrNotFound modelError = "models: resource not found"
 
-	// ErrIDInvalid is returned when an invalid ID is provided
-	// to a method like Delete.
-	ErrIDInvalid modelError = "models: ID provided was invalid"
-
 	// ErrPasswordIncorrect is returned when an invalid password
 	// is used when attempting to authenticate a user.
 	ErrPasswordIncorrect modelError = "models: incorrect password provided"
@@ -35,13 +31,25 @@ const (
 	// attempted with a user password that is less than 8 characters.
 	ErrPasswordTooShort modelError = "models: password must be at least 8 characters long"
 
+	// ErrTitleRequired is returned when a gallery create is
+	// attempted with an empty title.
+	ErrTitleRequired modelError = "models: title is required"
+
+	// ErrIDInvalid is returned when an invalid ID is provided
+	// to a method like Delete.
+	ErrIDInvalid privateError = "models: ID provided was invalid"
+
 	// ErrRememberRequired is returned when a create or updated is attempted
 	// without a user remember token hash.
-	ErrRememberRequired modelError = "models: remember token is required"
+	ErrRememberRequired privateError = "models: remember token is required"
 
 	// ErrRemeberTooShort is returned when a remember token is
 	// not at least 32 bytes.
-	ErrRemeberTooShort modelError = "models: remember token must be at least 32 bytes"
+	ErrRemeberTooShort privateError = "models: remember token must be at least 32 bytes"
+
+	// ErrUserIDRequired is returned when a gallery create is
+	// attempted with an empty user id.
+	ErrUserIDRequired privateError = "models: user ID is required"
 )
 
 type modelError string
@@ -55,4 +63,10 @@ func (e modelError) Public() string {
 	split := strings.Split(s, " ")
 	split[0] = strings.Title(split[0])
 	return strings.Join(split, " ")
+}
+
+type privateError string
+
+func (e privateError) Error() string {
+	return string(e)
 }
