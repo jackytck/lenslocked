@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jackytck/lenslocked/context"
 	"github.com/jackytck/lenslocked/models"
 	"github.com/jackytck/lenslocked/views"
 )
@@ -43,8 +44,16 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 		g.New.Render(w, vd)
 		return
 	}
+
+	user := context.User(r.Context())
+	fmt.Println("Create got the user:", user)
+	if user == nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+
 	gallery := models.Gallery{
-		Title: form.Title,
+		Title:  form.Title,
+		UserID: user.ID,
 	}
 	if err := g.gs.Create(&gallery); err != nil {
 		vd.SetAlert(err)
