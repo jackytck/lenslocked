@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/jackytck/lenslocked/context"
 	"github.com/jackytck/lenslocked/models"
 	"github.com/jackytck/lenslocked/views"
@@ -16,20 +18,46 @@ import (
 // initial setup.
 func NewGalleries(gs models.GalleryService) *Galleries {
 	return &Galleries{
-		New: views.NewView("bootstrap", "galleries/new"),
-		gs:  gs,
+		New:      views.NewView("bootstrap", "galleries/new"),
+		ShowView: views.NewView("bootstrap", "galleries/show"),
+		gs:       gs,
 	}
 }
 
 // Galleries represent a Galleries controller.
 type Galleries struct {
-	New *views.View
-	gs  models.GalleryService
+	New      *views.View
+	ShowView *views.View
+	gs       models.GalleryService
 }
 
 // GalleryForm represents the form data of create gallery page.
 type GalleryForm struct {
 	Title string `schema:"title"`
+}
+
+// Show shows the gallery.
+//
+// GET /galleries/:id
+func (g *Galleries) Show(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid gallery ID", http.StatusNotFound)
+		return
+	}
+	gallery, err := g.gs.ByID(uint(id))
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			http.Error(w, "Gallery not found", http.StatusNotFound)
+		default:
+			http.Error(w, "Whoops! Something went wrong.", http.StatusInternalServerError)
+		}
+		return
+	}
+	fmt.Fprintln(w, gallery)
 }
 
 // Create processes the gallery form when a user tries to create a new gallery.
