@@ -57,7 +57,10 @@ func (g *Galleries) Show(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	fmt.Fprintln(w, gallery)
+
+	var vd views.Data
+	vd.Yield = gallery
+	g.ShowView.Render(w, vd)
 }
 
 // Create processes the gallery form when a user tries to create a new gallery.
