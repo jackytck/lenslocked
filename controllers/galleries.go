@@ -12,15 +12,21 @@ import (
 	"github.com/jackytck/lenslocked/views"
 )
 
+const (
+	// ShowGallery is the name of the route.
+	ShowGallery = "show_gallery"
+)
+
 // NewGalleries is used to create a new Galleries controller.
 // This function will panic if the templates are not
 // parsed correctly, and should only be used during
 // initial setup.
-func NewGalleries(gs models.GalleryService) *Galleries {
+func NewGalleries(gs models.GalleryService, r *mux.Router) *Galleries {
 	return &Galleries{
 		New:      views.NewView("bootstrap", "galleries/new"),
 		ShowView: views.NewView("bootstrap", "galleries/show"),
 		gs:       gs,
+		r:        r,
 	}
 }
 
@@ -29,6 +35,7 @@ type Galleries struct {
 	New      *views.View
 	ShowView *views.View
 	gs       models.GalleryService
+	r        *mux.Router
 }
 
 // GalleryForm represents the form data of create gallery page.
@@ -77,7 +84,6 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := context.User(r.Context())
-	fmt.Println("Create got the user:", user)
 	if user == nil {
 		http.Redirect(w, r, "/login", http.StatusFound)
 	}
@@ -91,5 +97,11 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 		g.New.Render(w, vd)
 		return
 	}
-	fmt.Fprintln(w, gallery)
+	url, err := g.r.Get(ShowGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
+	if err != nil {
+		// TODO: Make this go to the index page
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, url.Path, http.StatusFound)
 }

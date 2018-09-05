@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/jackytck/lenslocked/context"
@@ -32,7 +31,6 @@ func (mw *RequireUser) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 		ctx = context.WithUser(ctx, user)
 		r = r.WithContext(ctx)
 
-		fmt.Println("User found:", user)
 		next(w, r)
 
 	})
