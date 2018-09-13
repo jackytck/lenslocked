@@ -15,6 +15,8 @@ import (
 const (
 	// ShowGallery is the name of the route.
 	ShowGallery = "show_gallery"
+	// EditGallery is the name of the route.
+	EditGallery = "edit_gallery"
 )
 
 // NewGalleries is used to create a new Galleries controller.
@@ -23,26 +25,43 @@ const (
 // initial setup.
 func NewGalleries(gs models.GalleryService, r *mux.Router) *Galleries {
 	return &Galleries{
-		New:      views.NewView("bootstrap", "galleries/new"),
-		ShowView: views.NewView("bootstrap", "galleries/show"),
-		EditView: views.NewView("bootstrap", "galleries/edit"),
-		gs:       gs,
-		r:        r,
+		New:       views.NewView("bootstrap", "galleries/new"),
+		ShowView:  views.NewView("bootstrap", "galleries/show"),
+		EditView:  views.NewView("bootstrap", "galleries/edit"),
+		IndexView: views.NewView("bootstrap", "galleries/index"),
+		gs:        gs,
+		r:         r,
 	}
 }
 
 // Galleries represent a Galleries controller.
 type Galleries struct {
-	New      *views.View
-	ShowView *views.View
-	EditView *views.View
-	gs       models.GalleryService
-	r        *mux.Router
+	New       *views.View
+	ShowView  *views.View
+	EditView  *views.View
+	IndexView *views.View
+	gs        models.GalleryService
+	r         *mux.Router
 }
 
 // GalleryForm represents the form data of create gallery page.
 type GalleryForm struct {
 	Title string `schema:"title"`
+}
+
+// Index shows all the galleries of a user.
+//
+// GET /galleries
+func (g *Galleries) Index(w http.ResponseWriter, r *http.Request) {
+	user := context.User(r.Context())
+	galleries, err := g.gs.ByUserID(user.ID)
+	if err != nil {
+		http.Error(w, "Something went wrong.", http.StatusInternalServerError)
+		return
+	}
+	var vd views.Data
+	vd.Yield = galleries
+	g.IndexView.Render(w, vd)
 }
 
 // Show shows the gallery page by id.
@@ -76,7 +95,7 @@ func (g *Galleries) Edit(w http.ResponseWriter, r *http.Request) {
 	g.EditView.Render(w, vd)
 }
 
-// Edit shows the gallery edit page by id.
+// Update handles the gallery update request.
 //
 // POST /galleries/:id/update
 func (g *Galleries) Update(w http.ResponseWriter, r *http.Request) {
@@ -133,8 +152,7 @@ func (g *Galleries) Delete(w http.ResponseWriter, r *http.Request) {
 		g.EditView.Render(w, vd)
 		return
 	}
-	// TODO: redirect to index page
-	fmt.Fprintln(w, "Successfully deleted!")
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 // Create processes the gallery form when a user tries to create a new gallery.
@@ -164,9 +182,8 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 		g.New.Render(w, vd)
 		return
 	}
-	url, err := g.r.Get(ShowGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
+	url, err := g.r.Get(EditGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
 	if err != nil {
-		// TODO: Make this go to the index page
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
