@@ -219,9 +219,9 @@ func (g *Galleries) Upload(w http.ResponseWriter, r *http.Request) {
 	files := r.MultipartForm.File["images"]
 	for _, f := range files {
 		// open the uploaded file
-		file, err := f.Open()
-		if err != nil {
-			vd.SetAlert(err)
+		file, err2 := f.Open()
+		if err2 != nil {
+			vd.SetAlert(err2)
 			g.EditView.Render(w, r, vd)
 			return
 		}
@@ -232,7 +232,13 @@ func (g *Galleries) Upload(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	fmt.Fprintln(w, "Files successfully uploaded!")
+
+	url, err := g.r.Get(EditGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
+	if err != nil {
+		http.Redirect(w, r, "/galleries", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, url.Path, http.StatusFound)
 }
 
 func (g *Galleries) galleryByID(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
@@ -253,5 +259,8 @@ func (g *Galleries) galleryByID(w http.ResponseWriter, r *http.Request) (*models
 		}
 		return nil, err
 	}
+
+	images, _ := g.is.ByGalleryID(gallery.ID)
+	gallery.Images = images
 	return gallery, nil
 }
