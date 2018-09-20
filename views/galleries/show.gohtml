@@ -4,11 +4,15 @@
       <h1>
         {{.Title}}
       </h1>
-      <ul>
-        {{range .Images}}
-          <li>{{.}}</li>
-        {{end}}
-      </ul>
+      <hr/>
+    </div>
+  </div>
+  <div class="row">
+    {{range .Images}}
+      <div class="col-md-4">
+        <img src="{{.}}" />
+      </div>
+    {{end}}
     </div>
   </div>
 {{end}}
