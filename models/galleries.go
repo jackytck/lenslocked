@@ -10,6 +10,19 @@ type Gallery struct {
 	Images []string `gorm:"-"`
 }
 
+// ImagesSplitN splits list of images into n columns.
+func (g *Gallery) ImagesSplitN(n int) [][]string {
+	ret := make([][]string, n)
+	for i := 0; i < n; i++ {
+		ret[i] = make([]string, 0)
+	}
+	for i, img := range g.Images {
+		col := i % n
+		ret[col] = append(ret[col], img)
+	}
+	return ret
+}
+
 type GalleryService interface {
 	GalleryDB
 }

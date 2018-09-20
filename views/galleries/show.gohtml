@@ -8,11 +8,20 @@
     </div>
   </div>
   <div class="row">
-    {{range .Images}}
+    {{range .ImagesSplitN 3}}
       <div class="col-md-4">
-        <img src="{{.}}" />
+        {{range .}}
+          <a href="{{.}}">
+            <img src="{{.}}" class="thumbnail" />
+          </a>
+        {{end}}
       </div>
     {{end}}
-    </div>
   </div>
+
+  <style>
+    .thumbnail {
+      width: 100%;
+    }
+  </style>
 {{end}}
