@@ -1,6 +1,10 @@
 package views
 
-import "github.com/jackytck/lenslocked/models"
+import (
+	"log"
+
+	"github.com/jackytck/lenslocked/models"
+)
 
 const (
 	// AlertLvlError represents Bootstrap danger alert.
@@ -34,6 +38,7 @@ func (d *Data) SetAlert(err error) {
 	if pErr, ok := err.(PublicError); ok {
 		d.AlertError(pErr.Public())
 	} else {
+		log.Println(err)
 		d.AlertError(AlertMsgGeneric)
 	}
 }
