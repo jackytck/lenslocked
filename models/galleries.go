@@ -1,6 +1,10 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"html"
+
+	"github.com/jinzhu/gorm"
+)
 
 // Gallery is our image container resources that visitors view.
 type Gallery struct {
@@ -138,6 +142,9 @@ func (gg *galleryGorm) ByUserID(id uint) ([]Gallery, error) {
 	err := gg.db.Where("user_id = ?", id).Find(&galleries).Error
 	if err != nil {
 		return nil, err
+	}
+	for i, g := range galleries {
+		galleries[i].Title = html.UnescapeString(g.Title)
 	}
 	return galleries, nil
 }
