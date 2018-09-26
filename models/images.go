@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -20,7 +21,10 @@ func (i Image) String() string {
 
 // Path gives the local file path of an image.
 func (i Image) Path() string {
-	return "/" + i.RelativePath()
+	u := url.URL{
+		Path: "/" + i.RelativePath(),
+	}
+	return u.String()
 }
 
 // Path gives the local file path of an image.
