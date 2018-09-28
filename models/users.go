@@ -8,11 +8,9 @@ import (
 	"github.com/jackytck/lenslocked/rand"
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
-
-	// dialects: postgres
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
+// TODO: Config
 const userPwPepper = "P4P]tV6$LZc;,bu5"
 const hmacSecretKey = "E4j!STJ$??cc]UhQ"
 
