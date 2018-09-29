@@ -40,8 +40,10 @@ func DefaultPostgresConfig() PostgresConfig {
 }
 
 type Config struct {
-	Port int
-	Env  string
+	Port    int    `json:"port"`
+	Env     string `json:"env"`
+	Pepper  string `json:"pepper"`
+	HMACKey string `json:"hmac_key"`
 }
 
 func (c Config) isProd() bool {
@@ -50,7 +52,9 @@ func (c Config) isProd() bool {
 
 func DefaultConfig() Config {
 	return Config{
-		Port: 3000,
-		Env:  "dev",
+		Port:    3000,
+		Env:     "dev",
+		Pepper:  "P4P]tV6$LZc;,bu5",
+		HMACKey: "E4j!STJ$??cc]UhQ",
 	}
 }

@@ -19,7 +19,7 @@ func testingUserService() (UserService, error) {
 	s, err := NewServices(
 		WithGorm("postgres", psqlInfo),
 		WithLogMode(true),
-		WithUser(),
+		WithUser("P4P]tV6$LZc;,bu5", "E4j!STJ$??cc]UhQ"),
 		WithGallery(),
 		WithImage())
 	if err != nil {

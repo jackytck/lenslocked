@@ -26,9 +26,9 @@ func WithLogMode(mode bool) ServicesConfig {
 	}
 }
 
-func WithUser() ServicesConfig {
+func WithUser(pepper, hmacKey string) ServicesConfig {
 	return func(s *Services) error {
-		s.User = NewUserService(s.db)
+		s.User = NewUserService(s.db, pepper, hmacKey)
 		return nil
 	}
 }
