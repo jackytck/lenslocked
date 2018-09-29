@@ -14,9 +14,14 @@ func testingUserService() (UserService, error) {
 		password = "natnat"
 		dbname   = "lenslocked_test"
 	)
-
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-	s, err := NewServices("postgres", psqlInfo)
+
+	s, err := NewServices(
+		WithGorm("postgres", psqlInfo),
+		WithLogMode(true),
+		WithUser(),
+		WithGallery(),
+		WithImage())
 	if err != nil {
 		return nil, err
 	}
