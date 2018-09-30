@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"os"
+)
 
 // # models/users.go
 // const userPwPepper = "P4P]tV6$LZc;,bu5"
@@ -40,21 +45,51 @@ func DefaultPostgresConfig() PostgresConfig {
 }
 
 type Config struct {
-	Port    int    `json:"port"`
-	Env     string `json:"env"`
-	Pepper  string `json:"pepper"`
-	HMACKey string `json:"hmac_key"`
+	Port     int            `json:"port"`
+	Env      string         `json:"env"`
+	Pepper   string         `json:"pepper"`
+	HMACKey  string         `json:"hmac_key"`
+	Database PostgresConfig `json:"database"`
 }
 
 func (c Config) isProd() bool {
 	return c.Env == "prod"
 }
 
+func (c Config) save() error {
+	data, err := json.MarshalIndent(c, "", "  ")
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(".config.json", data, 0644)
+	return err
+}
+
 func DefaultConfig() Config {
 	return Config{
-		Port:    3000,
-		Env:     "dev",
-		Pepper:  "P4P]tV6$LZc;,bu5",
-		HMACKey: "E4j!STJ$??cc]UhQ",
+		Port:     3000,
+		Env:      "dev",
+		Pepper:   "P4P]tV6$LZc;,bu5",
+		HMACKey:  "E4j!STJ$??cc]UhQ",
+		Database: DefaultPostgresConfig(),
 	}
+}
+
+func LoadConfig(configReq bool) Config {
+	f, err := os.Open(".config.json")
+	if err != nil {
+		if configReq {
+			panic(err)
+		}
+		fmt.Println("Using the default config...")
+		return DefaultConfig()
+	}
+	var c Config
+	dec := json.NewDecoder(f)
+	err = dec.Decode(&c)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Successfully loaded .config.json")
+	return c
 }
