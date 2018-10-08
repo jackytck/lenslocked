@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"net/http"
+	"time"
 
+	"github.com/jackytck/lenslocked/context"
 	"github.com/jackytck/lenslocked/models"
 	"github.com/jackytck/lenslocked/rand"
 	"github.com/jackytck/lenslocked/views"
@@ -109,6 +111,27 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/galleries", http.StatusFound)
+}
+
+// Logout is used to delete a user session cookie (remember_token)
+// and then will update the user resource with a new remember.
+//
+// POST /logout
+func (u *Users) Logout(w http.ResponseWriter, r *http.Request) {
+	cookie := http.Cookie{
+		Name:     "remember_token",
+		Value:    "",
+		Expires:  time.Now(),
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+
+	user := context.User(r.Context())
+	token, _ := rand.RememberToken()
+	user.Remember = token
+	u.us.Update(user)
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 // signIn is used to sign the given user in via cookies
