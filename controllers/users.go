@@ -70,7 +70,11 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, "/galleries", http.StatusFound)
+	alert := views.Alert{
+		Level:   views.AlertLvlSuccess,
+		Message: "Welcome to LensLocked.com",
+	}
+	views.RedirectAlert(w, r, "/galleries", http.StatusFound, alert)
 }
 
 // LoginForm represents the form data of login page.
