@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 	"github.com/jackytck/lenslocked/controllers"
+	"github.com/jackytck/lenslocked/email"
 	"github.com/jackytck/lenslocked/middleware"
 	"github.com/jackytck/lenslocked/models"
 	"github.com/jackytck/lenslocked/rand"
@@ -29,6 +30,14 @@ func main() {
 	defer services.Close()
 	services.AutoMigrate()
 	// services.DestructiveReset()
+
+	// email
+	mgCfg := cfg.Mailgun
+	emailer := email.NewClient(
+		email.WithSender("Support", "support@mail.jackytck.com"),
+		email.WithMailgun(mgCfg.Domain, mgCfg.APIKey, mgCfg.PublicAPIKey),
+	)
+	_ = emailer
 
 	// router
 	r := mux.NewRouter()
