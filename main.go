@@ -37,7 +37,6 @@ func main() {
 		email.WithSender("Support", "support@mail.jackytck.com"),
 		email.WithMailgun(mgCfg.Domain, mgCfg.APIKey, mgCfg.PublicAPIKey),
 	)
-	_ = emailer
 
 	// router
 	r := mux.NewRouter()
@@ -45,7 +44,7 @@ func main() {
 
 	// controllers
 	staticC := controllers.NewStatic()
-	usersC := controllers.NewUsers(services.User)
+	usersC := controllers.NewUsers(services.User, emailer)
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
 
 	b, err := rand.Bytes(32)

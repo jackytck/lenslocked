@@ -6,6 +6,28 @@ import (
 	mailgun "gopkg.in/mailgun/mailgun-go.v1"
 )
 
+const (
+	welcomeSubject = "Welcome to lenslocked.jackytck.com"
+)
+
+const welcomeText = `Hi there!
+
+Welcome to LensLocked! We really hope you enjoy using
+our application!
+
+Best,
+Jacky
+`
+
+const welcomeHTML = `Hi there!<br/>
+<br/>
+Welcome to
+<a href="https://lenslocked.jackytck.com">LensLocked</a>! We really hope you enjoy using our application!</br>
+<br/>
+Best,<br/>
+Jacky
+`
+
 func WithMailgun(domain, apiKey, publicApiKey string) ClientConfig {
 	return func(c *Client) {
 		c.mg = mailgun.NewMailgun(domain, apiKey, publicApiKey)
@@ -34,6 +56,13 @@ func NewClient(opts ...ClientConfig) *Client {
 type Client struct {
 	from string
 	mg   mailgun.Mailgun
+}
+
+func (c *Client) Welcome(toName, toEmail string) error {
+	message := mailgun.NewMessage(c.from, welcomeSubject, welcomeText, buildEmail(toName, toEmail))
+	message.SetHtml(welcomeHTML)
+	_, _, err := c.mg.Send(message)
+	return err
 }
 
 func buildEmail(name, email string) string {
