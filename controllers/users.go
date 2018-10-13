@@ -44,7 +44,9 @@ type SignupForm struct {
 //
 // GET /signup
 func (u *Users) New(w http.ResponseWriter, r *http.Request) {
-	u.NewView.Render(w, r, nil)
+	var form SignupForm
+	parseURLParams(r, &form)
+	u.NewView.Render(w, r, form)
 }
 
 // Create processes the signup form when a user tries to create a new user account.
@@ -55,6 +57,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	var form SignupForm
 	if err := parseForm(r, &form); err != nil {
 		vd.SetAlert(err)
+		vd.Yield = &form
 		u.NewView.Render(w, r, vd)
 		return
 	}
@@ -65,6 +68,7 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := u.us.Create(&user); err != nil {
 		vd.SetAlert(err)
+		vd.Yield = &form
 		u.NewView.Render(w, r, vd)
 		return
 	}
