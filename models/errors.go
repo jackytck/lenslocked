@@ -35,6 +35,9 @@ const (
 	// attempted with an empty title.
 	ErrTitleRequired modelError = "models: title is required"
 
+	// ErrTokenInvalid is returned if a password reset token is invalid or expired.
+	ErrTokenInvalid modelError = "models: token provided is not valid"
+
 	// ErrIDInvalid is returned when an invalid ID is provided
 	// to a method like Delete.
 	ErrIDInvalid privateError = "models: ID provided was invalid"
