@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -181,8 +180,13 @@ func (u *Users) InitiateReset(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: c. send email
-	fmt.Println("token:", token)
+	// c. send email
+	err = u.emailer.ResetPw("jackytck@gmail.com", token)
+	if err != nil {
+		vd.SetAlert(err)
+		u.ForgotPwView.Render(w, r, vd)
+		return
+	}
 
 	// d. redirect to /reset
 	views.RedirectAlert(w, r, "/reset", http.StatusFound, views.Alert{
