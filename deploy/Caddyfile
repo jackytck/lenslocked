@@ -1,4 +1,4 @@
-lenslocked.jackyck.com {
+lenslocked.jackytck.com {
   gzip
   proxy / localhost:3000 {
     transparent
