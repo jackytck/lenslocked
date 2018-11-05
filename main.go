@@ -12,6 +12,7 @@ import (
 	"github.com/jackytck/lenslocked/middleware"
 	"github.com/jackytck/lenslocked/models"
 	"github.com/jackytck/lenslocked/rand"
+	"golang.org/x/oauth2"
 )
 
 func main() {
@@ -52,6 +53,31 @@ func main() {
 	csrfMw := csrf.Protect(b, csrf.Secure(cfg.isProd()))
 	userMw := middleware.User{UserService: services.User}
 	requireUserMw := middleware.RequireUser{User: userMw}
+
+	// oauth test
+	dbxOAuth := &oauth2.Config{
+		ClientID:     cfg.Dropbox.ID,
+		ClientSecret: cfg.Dropbox.Secret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  cfg.Dropbox.AuthURL,
+			TokenURL: cfg.Dropbox.TokenURL,
+		},
+		RedirectURL: "http://localhost:3000/oauth/dropbox/callback",
+	}
+
+	dbxRedirect := func(w http.ResponseWriter, r *http.Request) {
+		state := csrf.Token(r)
+		url := dbxOAuth.AuthCodeURL(state)
+		fmt.Println(state)
+		http.Redirect(w, r, url, http.StatusFound)
+	}
+	r.HandleFunc("/oauth/dropbox/connect", dbxRedirect)
+
+	dbxCallback := func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		fmt.Fprintln(w, "code: ", r.FormValue("code"), " state: ", r.FormValue("state"))
+	}
+	r.HandleFunc("/oauth/dropbox/callback", dbxCallback)
 
 	// routes
 	r.Handle("/", staticC.Home).Methods("GET")
