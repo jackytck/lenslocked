@@ -53,6 +53,9 @@ const (
 	// ErrUserIDRequired is returned when a gallery create is
 	// attempted with an empty user id.
 	ErrUserIDRequired privateError = "models: user ID is required"
+
+	// ErrServiceRequired is returned when an oauth is created with an empty service id.
+	ErrServiceRequired privateError = "models: service ID is required"
 )
 
 type modelError string

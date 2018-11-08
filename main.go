@@ -28,7 +28,9 @@ func main() {
 		models.WithLogMode(!cfg.isProd()),
 		models.WithUser(cfg.Pepper, cfg.HMACKey),
 		models.WithGallery(),
-		models.WithImage())
+		models.WithImage(),
+		models.WithOAuth(),
+	)
 	must(err)
 	defer services.Close()
 	services.AutoMigrate()
