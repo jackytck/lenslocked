@@ -45,7 +45,6 @@ func (mw *User) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 		r = r.WithContext(ctx)
 
 		next(w, r)
-
 	})
 }
 

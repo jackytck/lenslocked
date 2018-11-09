@@ -15,6 +15,8 @@ import (
 	"github.com/jackytck/lenslocked/models"
 	"github.com/jackytck/lenslocked/rand"
 	"golang.org/x/oauth2"
+
+	llctx "github.com/jackytck/lenslocked/context"
 )
 
 func main() {
@@ -80,7 +82,7 @@ func main() {
 		url := dbxOAuth.AuthCodeURL(state)
 		http.Redirect(w, r, url, http.StatusFound)
 	}
-	r.HandleFunc("/oauth/dropbox/connect", dbxRedirect)
+	r.HandleFunc("/oauth/dropbox/connect", requireUserMw.ApplyFn(dbxRedirect))
 
 	dbxCallback := func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
@@ -103,9 +105,28 @@ func main() {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		user := llctx.User(r.Context())
+		existing, err := services.OAuth.Find(user.ID, models.OAuthDropbox)
+		if err == models.ErrNotFound {
+			// no op
+		} else if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			services.OAuth.Delete(existing.ID)
+		}
+		userOAuth := models.OAuth{
+			UserID:  user.ID,
+			Token:   *token,
+			Service: models.OAuthDropbox,
+		}
+		err = services.OAuth.Create(&userOAuth)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		fmt.Fprintf(w, "%+v", token)
 	}
-	r.HandleFunc("/oauth/dropbox/callback", dbxCallback)
+	r.HandleFunc("/oauth/dropbox/callback", requireUserMw.ApplyFn(dbxCallback))
+	// end of oauth
 
 	// routes
 	r.Handle("/", staticC.Home).Methods("GET")

@@ -5,6 +5,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const (
+	OAuthDropbox = "dropbox"
+)
+
 // OAuth stores the oauth token of a user.
 type OAuth struct {
 	gorm.Model
