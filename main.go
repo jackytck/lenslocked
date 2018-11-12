@@ -41,8 +41,9 @@ func main() {
 		email.WithMailgun(mgCfg.Domain, mgCfg.APIKey, mgCfg.PublicAPIKey),
 	)
 
-	// oauth config (dropbox)
-	dbxConfig := &oauth2.Config{
+	// oauth config
+	oConfigs := make(map[string]*oauth2.Config)
+	oConfigs[models.OAuthDropbox] = &oauth2.Config{
 		ClientID:     cfg.Dropbox.ID,
 		ClientSecret: cfg.Dropbox.Secret,
 		Endpoint: oauth2.Endpoint{
@@ -60,7 +61,7 @@ func main() {
 	staticC := controllers.NewStatic()
 	usersC := controllers.NewUsers(services.User, emailer)
 	galleriesC := controllers.NewGalleries(services.Gallery, services.Image, r)
-	oauthsC := controllers.NewOAuths(services.OAuth, dbxConfig)
+	oauthsC := controllers.NewOAuths(services.OAuth, oConfigs)
 
 	b, err := rand.Bytes(32)
 	must(err)
@@ -103,9 +104,9 @@ func main() {
 	r.HandleFunc("/galleries/{id:[0-9]+}", galleriesC.Show).Methods("GET").Name(controllers.ShowGallery)
 
 	// routes: OAuths (dropbox)
-	r.HandleFunc("/oauth/dropbox/connect", requireUserMw.ApplyFn(oauthsC.DropboxConnect))
-	r.HandleFunc("/oauth/dropbox/callback", requireUserMw.ApplyFn(oauthsC.DropboxCallback))
-	r.HandleFunc("/oauth/dropbox/test", requireUserMw.ApplyFn(oauthsC.DropboxTest))
+	r.HandleFunc("/oauth/{service:[a-z]+}/connect", requireUserMw.ApplyFn(oauthsC.Connect))
+	r.HandleFunc("/oauth/{service:[a-z]+}/callback", requireUserMw.ApplyFn(oauthsC.Callback))
+	r.HandleFunc("/oauth/{service:[a-z]+}/test", requireUserMw.ApplyFn(oauthsC.DropboxTest))
 
 	fmt.Printf("Starting the server at http://127.0.0.1:%d...", cfg.Port)
 	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), csrfMw(userMw.Apply(r)))
