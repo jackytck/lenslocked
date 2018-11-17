@@ -25,6 +25,10 @@
     </div>
   </div>
   <div class="row">
+    <div class="col-md-10 col-md-offset-1" id="dropbox-button-container">
+    </div>
+  </div>
+  <div class="row">
     <div class="col-md-10 col-md-offset-1">
       <h3>Danger Zone</h3>
       <hr>
@@ -33,6 +37,25 @@
       {{template "deleteGalleryForm" .}}
     </div>
   </div>
+{{end}}
+
+{{define "javascript-footer"}}
+  <script type="text/javascript" src="https://www.dropbox.com/static/api/2/dropins.js" id="dropboxjs" data-app-key="ykjqhbh0vecu44s"></script>
+  <script>
+    options = {
+      success: function(files) {
+        for (let i=0; i<files.length; i++) {
+          console.log(files[i].link);
+        }
+      },
+      linkType: "direct",
+      multiselect: true,
+      extensions: ['images'],
+      folderselect: false,
+    };
+    var button = Dropbox.createChooseButton(options);
+    document.getElementById("dropbox-button-container").appendChild(button);
+  </script>
 {{end}}
 
 {{define "editGalleryForm"}}
