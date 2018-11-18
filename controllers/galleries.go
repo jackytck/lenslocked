@@ -194,6 +194,57 @@ func (g *Galleries) Create(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url.Path, http.StatusFound)
 }
 
+// ImageViaLink handles the gallery upload links request.
+//
+// POST /galleries/:id/images/link
+func (g *Galleries) ImageViaLink(w http.ResponseWriter, r *http.Request) {
+	gallery, err := g.galleryByID(w, r)
+	if err != nil {
+		return
+	}
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+	var vd views.Data
+	vd.Yield = gallery
+	r.ParseForm()
+	fmt.Fprintln(w, r.PostForm)
+
+	// err = r.ParseMultipartForm(maxMultipartMem)
+	// if err != nil {
+	// 	vd.SetAlert(err)
+	// 	g.EditView.Render(w, r, vd)
+	// 	return
+	// }
+	//
+	// files := r.MultipartForm.File["images"]
+	// for _, f := range files {
+	// 	// open the uploaded file
+	// 	file, err2 := f.Open()
+	// 	if err2 != nil {
+	// 		vd.SetAlert(err2)
+	// 		g.EditView.Render(w, r, vd)
+	// 		return
+	// 	}
+	// 	err = g.is.Create(gallery.ID, file, f.Filename)
+	// 	if err != nil {
+	// 		vd.SetAlert(err)
+	// 		g.EditView.Render(w, r, vd)
+	// 		return
+	// 	}
+	// }
+	//
+	// url, err := g.r.Get(EditGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	http.Redirect(w, r, "/galleries", http.StatusFound)
+	// 	return
+	// }
+	// http.Redirect(w, r, url.Path, http.StatusFound)
+}
+
 // Upload handles the gallery upload request.
 //
 // POST /galleries/:id/images
