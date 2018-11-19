@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/jackytck/lenslocked/context"
@@ -209,40 +210,30 @@ func (g *Galleries) ImageViaLink(w http.ResponseWriter, r *http.Request) {
 	}
 	var vd views.Data
 	vd.Yield = gallery
-	r.ParseForm()
-	fmt.Fprintln(w, r.PostForm)
+	if err = r.ParseForm(); err != nil {
+		vd.SetAlert(err)
+		g.EditView.Render(w, r, vd)
+		return
+	}
+	files := r.PostForm["files"]
+	for _, fileURL := range files {
+		resp, err2 := http.Get(fileURL)
+		if err2 != nil {
+			panic(err2)
+		}
+		defer resp.Body.Close()
+		pieces := strings.Split(fileURL, "/")
+		filename := pieces[len(pieces)-1]
+		g.is.Create(gallery.ID, resp.Body, filename)
+	}
 
-	// err = r.ParseMultipartForm(maxMultipartMem)
-	// if err != nil {
-	// 	vd.SetAlert(err)
-	// 	g.EditView.Render(w, r, vd)
-	// 	return
-	// }
-	//
-	// files := r.MultipartForm.File["images"]
-	// for _, f := range files {
-	// 	// open the uploaded file
-	// 	file, err2 := f.Open()
-	// 	if err2 != nil {
-	// 		vd.SetAlert(err2)
-	// 		g.EditView.Render(w, r, vd)
-	// 		return
-	// 	}
-	// 	err = g.is.Create(gallery.ID, file, f.Filename)
-	// 	if err != nil {
-	// 		vd.SetAlert(err)
-	// 		g.EditView.Render(w, r, vd)
-	// 		return
-	// 	}
-	// }
-	//
-	// url, err := g.r.Get(EditGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	http.Redirect(w, r, "/galleries", http.StatusFound)
-	// 	return
-	// }
-	// http.Redirect(w, r, url.Path, http.StatusFound)
+	url, err := g.r.Get(EditGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
+	if err != nil {
+		fmt.Println(err)
+		http.Redirect(w, r, "/galleries", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, url.Path, http.StatusFound)
 }
 
 // Upload handles the gallery upload request.
