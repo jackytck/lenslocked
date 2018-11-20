@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/jackytck/lenslocked/context"
@@ -216,17 +217,26 @@ func (g *Galleries) ImageViaLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	files := r.PostForm["files"]
+
+	var wg sync.WaitGroup
+	wg.Add(len(files))
 	for _, fileURL := range files {
-		resp, err2 := http.Get(fileURL)
-		if err2 != nil {
-			panic(err2)
-		}
-		defer resp.Body.Close()
-		pieces := strings.Split(fileURL, "/")
-		filename := pieces[len(pieces)-1]
-		g.is.Create(gallery.ID, resp.Body, filename)
+		go func(url string) {
+			defer wg.Done()
+			resp, err2 := http.Get(url)
+			if err2 != nil {
+				log.Println("Failed to download the image from:", url)
+			}
+			defer resp.Body.Close()
+			pieces := strings.Split(url, "/")
+			filename := pieces[len(pieces)-1]
+			if err := g.is.Create(gallery.ID, resp.Body, filename); err != nil {
+				log.Println("Failed to create the image from:", url)
+			}
+		}(fileURL)
 	}
 
+	wg.Wait()
 	url, err := g.r.Get(EditGallery).URL("id", fmt.Sprintf("%v", gallery.ID))
 	if err != nil {
 		fmt.Println(err)
